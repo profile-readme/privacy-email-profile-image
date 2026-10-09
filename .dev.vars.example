@@ -1,0 +1,4 @@
+# Copy to .dev.vars (git-ignored) for `make dev`. Never commit real addresses.
+EMAILS="maple-lantern-q7x2@protonmail.com
+kitsune-shrine-m4k9@protonmail.com"
+EMAIL_SWAP_TOKEN="replace-with-at-least-32-random-characters"

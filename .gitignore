@@ -1,0 +1,6 @@
+# private data (real address lists, tokens) never enters the repo
+.personal/
+.dev.vars
+wrangler.toml
+node_modules/
+.wrangler/
