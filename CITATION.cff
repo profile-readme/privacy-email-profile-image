@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+title: privacy-email-profile-image
+message: "If you use this software, please cite it using the metadata from this file."
+type: software
+authors:
+  - name: Aesthetic Vulpes
+    alias: didvc
+    website: https://github.com/didvc
+repository-code: https://github.com/profile-readme/privacy-email-profile-image
+url: https://readmes.pages.dev/email/help
+license: AGPL-3.0-only
+version: 0.1.0
+date-released: 2026-10-10
+abstract: >
+  privacy-email-profile-image renders an email address for GitHub profile
+  READMEs as pixels inside an SVG, so the page source contains no address
+  text for scrapers to harvest. It follows a "swap as it leaks" model: the
+  owner keeps a list of alias addresses and switches the visible one with a
+  secret link when an address starts attracting spam, and every embed
+  updates at once. It runs on Cloudflare Pages Functions without dependencies.
+keywords:
+  - email
+  - privacy
+  - anti-spam
+  - email-alias
+  - disposable-email
+  - github-profile-readme
+  - svg
+  - cloudflare-pages
