@@ -5,10 +5,13 @@
 import { FONT } from "./font.generated.js";
 
 export const LIST_VARS = ["EMAILS", ...Array.from({ length: 8 }, (_, i) => `EMAILS_${i + 2}`)];
+export const PREFIX_RE = /^[A-Z0-9_]{0,40}$/;
 const EMAIL_RE = /^[A-Za-z0-9._+-]{1,64}@[A-Za-z0-9-]{1,63}(\.[A-Za-z0-9-]{1,63})+$/;
 
-export function readList(env = {}) {
-  const raw = LIST_VARS.map((k) => (typeof env[k] === "string" ? env[k] : "")).join("\n");
+// prefix selects an independent list, e.g. "WORK_" reads WORK_EMAILS, WORK_EMAILS_2 ...
+export function readList(env = {}, prefix = "") {
+  if (!PREFIX_RE.test(prefix)) throw new Error("invalid instance prefix");
+  const raw = LIST_VARS.map((k) => (typeof env[prefix + k] === "string" ? env[prefix + k] : "")).join("\n");
   const list = [];
   let skipped = 0;
   for (const addr of raw.split(/[\s,;]+/).filter(Boolean)) {

@@ -98,3 +98,35 @@ test("every style combination renders without NaN", async () => {
       assert.ok(!/NaN|undefined/.test(svg), `${style}/${extra}`);
     }
 });
+
+test("instances: a prefixed list has its own token, list and position", async () => {
+  const kv = new MemoryKV();
+  const OTHER = ["paper-crane-w2v6@protonmail.com", "autumn-bell-h5t1@protonmail.com"];
+  const T2 = "u".repeat(40);
+  const env = { ...envWith({ EMAIL_STATE: kv }), WORK_EMAILS: OTHER.join("\n"), WORK_EMAIL_SWAP_TOKEN: T2 };
+  const ns = { prefix: "WORK_", key: "work" };
+  assert.match(await (await status("GET", env, [T2], ns)).text(), /address 1 of 2: p\*{4}-c\*{4}-w\*{3}@/);
+  assert.equal((await swap("GET", env, [TOKEN], ns)).status, 404, "default token must not control the instance");
+  assert.equal((await swap("GET", env, [T2])).status, 404, "instance token must not control the default list");
+  await swap("GET", env, [T2], ns);
+  assert.match(await (await status("GET", env, [T2], ns)).text(), /address 2 of 2/);
+  assert.match(await (await status("GET", env, [TOKEN])).text(), /address 1 of 3/, "default position untouched");
+  assert.equal(kv.m.get("work:current-index"), "1");
+  const png = async (n) => (await (await badge("GET", env, ["jitter-0", "noise-0"], n)).text()).match(/base64,([^"]+)"/)[1];
+  assert.notEqual(await png(ns), await png({}));
+});
+
+test("rem sizing by default, px option, rem size tokens", async () => {
+  const svg = async (p) => (await (await badge("GET", envWith(), p)).text());
+  assert.match(await svg([]), /^<svg[^>]*width="[\d.]+rem" height="[\d.]+rem"/);
+  assert.match(await svg(["px"]), /^<svg[^>]*width="[\d.]+" height="[\d.]+" viewBox/);
+  assert.equal(parseOptions(["size-1.5rem"]).opts.size, 24);
+});
+
+test("default colors match GitHub's text; warm keeps the readmes palette", async () => {
+  const svg = async (p) => (await (await badge("GET", envWith(), p)).text());
+  const d = await svg([]);
+  assert.match(d, /--text:#1f2328;/);
+  assert.match(d, /--text:#f0f6fc;/);
+  assert.match(await svg(["warm"]), /--text:#f6e7dc;/);
+});

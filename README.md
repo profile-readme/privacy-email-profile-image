@@ -1,5 +1,7 @@
 # privacy-email-profile-image
 
+English | [Deutsch](README.de.md) | [Français](README.fr.md)
+
 An email address badge for your GitHub profile README that shows your address as an
 image instead of text, and lets you swap to a fresh address the moment the old one
 starts attracting spam.
@@ -36,6 +38,10 @@ can always copy an address by hand. So the badge is built around a second idea t
 matters more than the first.
 
 ## Swap as it leaks
+
+Hiding an address only delays the moment it leaks, so I came up with a different
+approach. I call it the "swap as it leaks" model: accept that every public address will
+leak eventually, and make replacing it effortless.
 
 Instead of trying to keep one address secret forever, you keep a list of addresses.
 These are typically disposable or alias addresses from a forwarding service, though
@@ -88,12 +94,14 @@ pink notice naming the position of the unknown option, so typos are easy to spot
 
 | Option | Effect |
 |---|---|
-| `size-N` | Font size in pixels, from 10 to 40 (default 16) |
+| `size-N`, `size-Nrem` | Font size in pixels, from 10 to 40 (default 16) |
+| `px` | Pin exact pixels instead of rem (see below) |
 | `border-N` | Border width in pixels, from 0 to 8 (default 0) |
 | `accent-RRGGBB` | Color of the icon, caption and border as hex without `#` |
 | `auto` | Follow the viewer's light or dark preference (default) |
 | `light`, `dark` | Force a theme |
 | `transparent` | No background when there is no caption or border |
+| `warm` | Warm readmes palette instead of GitHub's own text colors (default) |
 
 ### Scraper resistance
 
@@ -109,6 +117,14 @@ more hand-drawn. Level 0 turns each effect off if you prefer a perfectly clean l
 
 The text color always follows the theme. In auto mode the address is dark on light
 backgrounds and light on dark ones, matching GitHub's own theme for each viewer.
+
+### Sizing in rem
+
+Every badge is sized in rem, where 1rem is 16 pixels. With default browser settings it looks
+exactly like a pixel size. When a reader has raised the default font size in their browser,
+often to make text easier to read, the badge and the address grow with it, just like the
+text around them. You can also write sizes in rem, as in `size-1.5rem`. Add `px` when a badge
+must keep an exact pixel size.
 
 ## How swapping works
 
@@ -241,6 +257,32 @@ number wraps around safely. If you reorder the list, check the status page and u
 
 A good routine is to keep a few unused aliases at the end of the list. When one leaks,
 swap, retire the old alias, and add a fresh one to the end when convenient.
+
+## More than one list in one deployment
+
+A single Pages project can serve several independent badges on different paths, which
+saves you from creating a new project for each one. Cloudflare limits how many Pages
+projects an account may have, so this is worth knowing about.
+
+Each extra badge is called an instance. It has its own address list and its own swap
+token, and it remembers its own live position. Its secrets use a prefix of your choice,
+for example `WORK_EMAILS` and `WORK_EMAIL_SWAP_TOKEN`. To add one, create a route folder
+next to `functions/email/` that calls the same handlers with that prefix:
+
+```js
+// functions/email-work/[[params]].js
+import { badge } from "../../src/email/handler.js";
+export const onRequest = ({ request, env, params }) =>
+  badge(request.method, env, [].concat(params.params ?? []), { prefix: "WORK_", key: "work" });
+```
+
+Add matching `swap/[[params]].js` and `status/[[params]].js` files inside that folder,
+calling `swap` and `status` the same way. The token of one instance never controls
+another, and positions are stored under separate keys in the same state store.
+
+A route that is not linked from anywhere is not a secret, since anyone who sees your
+profile can read the image address. It simply keeps your personal badge out of the
+public listing.
 
 ## Keeping the token safe
 

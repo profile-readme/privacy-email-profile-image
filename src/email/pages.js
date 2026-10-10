@@ -21,11 +21,13 @@ export const OPTION_GROUPS = [
   {
     title: "Size and color",
     rows: [
-      ["size-N", "Font size in pixels, 10 to 40 (default 16)."],
+      ["size-N", "Font size in pixels, 10 to 40 (default 16); also in rem, e.g. size-2rem (1rem = 16px)."],
+      ["px", "Pin the image to exact pixels. By default it is sized in rem, so it grows with the reader's browser font size."],
       ["border-N", "Border width in pixels, 0 to 8 (default 0)."],
       ["accent-RRGGBB", "Icon, caption and border color as 3 or 6 hex digits without #."],
       ["auto", "Follow the viewer's light or dark preference (default)."],
       ["light, dark", "Force a theme."],
+      ["warm", "Use the warm readmes palette (cream and cocoa) instead of GitHub's own text colors, which are the default."],
       ["transparent", "No background for pill and card when there is no caption or border."],
     ],
   },

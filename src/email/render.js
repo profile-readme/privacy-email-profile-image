@@ -7,12 +7,18 @@ import { SITE } from "./site.generated.js";
 export const esc = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const r1 = (n) => Math.round(n * 10) / 10;
+// Root size in rem (1rem = 16px) so the whole image follows the reader's browser font-size
+// setting; identical to pixels at the default 16px. The px option pins exact pixels instead.
+const dim = (n, px) => (px ? String(n) : `${Math.round((n / 16) * 10000) / 10000}rem`);
 
-const PALETTE = {
-  light: { bg: "#fff8f1", text: "#3b2418", line: "#ecd9c8" },
-  dark: { bg: "#241e2b", text: "#f6e7dc", line: "#3a3142" },
+// Default: GitHub's own colors (text, canvas, border), so the image reads like the README around it.
+// An image cannot inherit the page's colors, so they are matched exactly. "warm" keeps the readmes palette.
+const PALETTES = {
+  github: { light: { bg: "#ffffff", text: "#1f2328", line: "#d1d9e0" }, dark: { bg: "#0d1117", text: "#f0f6fc", line: "#3d444d" } },
+  warm: { light: { bg: "#fff8f1", text: "#3b2418", line: "#ecd9c8" }, dark: { bg: "#241e2b", text: "#f6e7dc", line: "#3a3142" } },
 };
-function themeCss(theme) {
+function themeCss(theme, palette) {
+  const PALETTE = PALETTES[palette] ?? PALETTES.github;
   const vars = (p) => `--bg:${p.bg};--text:${p.text};--line:${p.line};`;
   let css = `svg{${vars(theme === "dark" ? PALETTE.dark : PALETTE.light)}}`;
   if (theme === "auto" || theme === "transparent") css += `@media (prefers-color-scheme:dark){svg{${vars(PALETTE.dark)}}}`;
@@ -85,9 +91,9 @@ export function renderBadge(opts, raster, pngBase64) {
     `<image x="${r1(tx)}" y="${r1(ty)}" width="${tw}" height="${th}" preserveAspectRatio="none" href="data:image/png;base64,${pngBase64}"/></mask>`,
   );
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="t">` +
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${dim(W, opts.px)}" height="${dim(H, opts.px)}" viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="t">` +
     `<!-- (c) ${esc(SITE.copyrightYear)} ${esc(SITE.copyrightHolder)} (${esc(SITE.copyrightUrl)}) -->` +
-    `<title id="t">${TITLE}</title><style>${themeCss(opts.theme)}</style><defs>${parts.join("")}</defs>` +
+    `<title id="t">${TITLE}</title><style>${themeCss(opts.theme, opts.palette)}</style><defs>${parts.join("")}</defs>` +
     body +
     `<rect x="${r1(tx)}" y="${r1(ty)}" width="${tw}" height="${th}" fill="var(--text)" mask="url(#m)"/></svg>`
   );
@@ -98,7 +104,7 @@ export function renderNotice(message, tone = "error") {
   const W = Math.round(text.length * 7.2 + 24);
   const [bg, fg] = tone === "error" ? ["#fde2e4", "#9b2c3a"] : ["#fff1d6", "#6b4a00"];
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="28" viewBox="0 0 ${W} 28" role="img" aria-label="${esc(text)}">` +
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${dim(W)}" height="${dim(28)}" viewBox="0 0 ${W} 28" role="img" aria-label="${esc(text)}">` +
     `<title>${esc(text)}</title><rect width="${W}" height="28" rx="14" fill="${bg}"/>` +
     `<text x="${W / 2}" y="18.5" text-anchor="middle" fill="${fg}" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="12">${esc(text)}</text></svg>`
   );
